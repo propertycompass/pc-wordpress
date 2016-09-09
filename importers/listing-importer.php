@@ -26,7 +26,8 @@ class PropertyCompassListingImporter {
 			'baths' => 'property.features.bathrooms',
 			'carports' => 'property.features.carports',
 			'garages' => 'property.features.garages',
-			'project_name' => 'projectName',
+			'project_name' => 'project.name',
+			'project_image' => 'project.titleImageUrl',
 			'category' => 'property.category',
 			'type' => 'type',
 			'sub_type' => 'subType'
