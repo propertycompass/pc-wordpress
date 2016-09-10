@@ -11,7 +11,7 @@ class PropertyCompassAPIV1 {
       $controller = get_query_var('_api_controller', null) . 'Controller';
       $action = get_query_var('_api_action', null);
 
-      $this->apiKey = get_option('property_compass_api_key');
+      $this->apiKey = get_option('property_compass_api_key');      
       $this->require_api_key();
       $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
 
@@ -41,7 +41,6 @@ class PropertyCompassAPIV1 {
 
     list( $algo, $hash ) = explode( '=', $_SERVER['HTTP_X_PC_SIGNATURE'], 2 ) + array( '', '' );
     $raw_post = file_get_contents( 'php://input' );
-
     if ( $hash !== hash_hmac( $algo, $raw_post, $this->apiKey ) ) {
       wp_send_json_error('400 Unauthorised : invalid');
     }

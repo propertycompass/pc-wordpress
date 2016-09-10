@@ -1,18 +1,14 @@
 <?php
-
-/*
- * We maintain a class map here to autoload and required files.
- *
- * @param $class
- *   The class name.
- */
 function __autoload($class) {
-   
+
     $classes = array(
-        'PropertyCompassAdmin'  => 'admin/pc-admin.php'
+        'PC_PostTypes'        => 'config/pc-post-types.php',
+        'PC_Admin'             => 'admin/pc-admin.php'
     );
 
     if(isset($classes[$class])) {
+    	echo dirname(__FILE__) . '/' . $classes[$class];
         require_once dirname(__FILE__) . '/' . $classes[$class];
     }
+    exit;
 }

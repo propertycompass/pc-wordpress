@@ -1,6 +1,6 @@
 <?php
 
-class PropertyCompassAdmin
+class PC_Admin
 {
 	public function __construct() {
 		add_action('admin_init', array($this, 'pc_admin_init'));

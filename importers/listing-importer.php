@@ -5,7 +5,7 @@
  */
 
 
-class PropertyCompassListingImporter {
+class PC_Listing_Importer {
 
 	public $mappedFields;
 
@@ -22,17 +22,20 @@ class PropertyCompassListingImporter {
 			'post_code' => 'property:address:postCode',
 			'price' => 'price:from',
 			'price_display' => 'price:display',
-			'beds' => 'property.features.bedrooms',
-			'baths' => 'property.features.bathrooms',
-			'carports' => 'property.features.carports',
-			'garages' => 'property.features.garages',
-			'project_name' => 'project.name',
-			'project_image' => 'project.titleImageUrl',
-			'category' => 'property.category',
+			'beds' => 'property:features:bedrooms',
+			'baths' => 'property:features:bathrooms',
+			'carports' => 'property:features:carports',
+			'garages' => 'property:features:garages',
+			'project_name' => 'project:name',
+			'project_image' => 'project:titleImageUrl',
+			'category' => 'property:category',
+			'status' => 'status',
 			'type' => 'type',
 			'sub_type' => 'subType'
 		);
 	}
+
+
 
 	public function import($listing_data) {
 
@@ -66,7 +69,7 @@ class PropertyCompassListingImporter {
 		      'post_title'    => $this->get_title($listing_data),
 		      'post_content'  => $listing_data->description,
 		      'post_type'     => 'pc-listing',
-		      'post_status'   => $listing_data->status
+		      'post_status'   => ( $listing ) ? $listing[0]->post_status : 'publish'
 		   );
 
  		$listing_id = wp_insert_post( $listing_post );

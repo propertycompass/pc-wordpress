@@ -57,7 +57,7 @@ class ListingsController {
 
 	private function processFile($file) {
 		$listings = json_decode(file_get_contents($file));
-		$importer = new PropertyCompassListingImporter();
+		$importer = new PC_Listing_Importer();
 
 		$isSuccess = true;
 		foreach($listings as $listing) {

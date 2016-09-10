@@ -8,12 +8,12 @@
  * Author: Property Compass
  * Author URI: propertycompass.com.au
  */
-
 require_once dirname(__FILE__) . '/importers/listing-importer.php';
 require_once dirname(__FILE__) . '/admin/pc-admin.php';
+require_once dirname(__FILE__) . '/config/pc-post-types.php';
 defined( 'ABSPATH' ) or die( 'Access denied!' );
 
-class PropertyCompassAPI {
+class PC_API {
 	public function __construct() {
 		$this->setup();
 	}
@@ -24,6 +24,10 @@ class PropertyCompassAPI {
 	public function setup() {
 		add_action('init', function() {
 			//specify the endpoint details
+			
+			$post_types = new PC_PostTypes();
+			$post_types->create_listing_post_type();
+
 			$regex = 'propertycompass/v1/([^/]*)/([^/]*)/?';
 			$location = 'index.php?_api_controller=$matches[1]&_api_action=$matches[2]';
 			$priority = 'top';
@@ -51,5 +55,5 @@ class PropertyCompassAPI {
 	}
 }
 
-new PropertyCompassAPI();
-new PropertyCompassAdmin();
+new PC_API();
+new PC_Admin();
