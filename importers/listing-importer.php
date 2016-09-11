@@ -13,26 +13,27 @@ class PC_Listing_Importer {
 
 		//TODO: this needs to be moved as a configuration option in the ADMIN settings
 		$this->mappedFields = array(
-			'street' => 'property:address:street',
-			'locality' => 'property:address:locality',
-			'region' => 'property:address:region',
-			'street_number' => 'property:address:streetNumber',
-			'sub_number' => 'property:address:subNumber',
-			'country' => 'property:address:country',
-			'post_code' => 'property:address:postCode',
-			'price' => 'price:from',
-			'price_display' => 'price:display',
-			'beds' => 'property:features:bedrooms',
-			'baths' => 'property:features:bathrooms',
-			'carports' => 'property:features:carports',
-			'garages' => 'property:features:garages',
-			'project_name' => 'project:name',
-			'project_image' => 'project:titleImageUrl',
-			'category' => 'property:category',
-			'status' => 'status',
-			'type' => 'type',
-			'sub_type' => 'subType'
+			'_listing_street' => 'property:address:street',
+			'_listing_locality' => 'property:address:locality',
+			'_listing_region' => 'property:address:region',
+			'_listing_street_number' => 'property:address:streetNumber',
+			'_listing_sub_number' => 'property:address:subNumber',
+			'_listing_country' => 'property:address:country',
+			'_listing_post_code' => 'property:address:postCode',
+			'_listing_price' => 'price:from',
+			'_listing_price_display' => 'price:display',
+			'_listing_beds' => 'property:features:bedrooms',
+			'_listing_baths' => 'property:features:bathrooms',
+			'_listing_carports' => 'property:features:carports',
+			'_listing_garages' => 'property:features:garages',
+			'_listing_project_name' => 'project:name',
+			'_listing_project_image' => 'project:titleImageUrl',
+			'_listing_category' => 'property:category',
+			'_listing_status' => 'status',
+			'_listing_type' => 'type',
+			'_listing_sub_type' => 'subType'
 		);
+
 	}
 
 
@@ -80,11 +81,17 @@ class PC_Listing_Importer {
  		}
 
 		if ( $listing_id ) {
-      		update_post_meta( $listing_id, 'listing_id', $listing_data->id );
+      		update_post_meta( $listing_id, '_listing_id', $listing_data->id );
 
       		if (!empty($listing_data->property->images)) {
       			$images = array_map(function ($ar) {return $ar->url;}, $listing_data->property->images);	
-				$delimImages = implode("|", $images);				
+				$delimImages = implode("|", $images);
+
+				//Featured image is first image in array
+  				if (!empty($images)) {
+  					update_post_meta( $listing_id, '_thumbnail_ext_url', $images[0] );
+  					update_post_meta( $listing_id, '_thumbnail_id', 'by_url' );
+  				}
       		}
       		update_post_meta( $listing_id, 'images', $delimImages );
 
@@ -105,7 +112,7 @@ class PC_Listing_Importer {
 
     	return true;
 	}
-
+	
 	/**
 	 * Loops through a mapping to retrieve the value from the listing object
 	 * @param  [type] $listing the listing object being processed
@@ -142,18 +149,4 @@ class PC_Listing_Importer {
     	return print_r("" . $mesg . "\n");
     }
 
-    private function process_featured_image($post_id) {
-        // Get the main image.
-        $main_image = get_post_meta($post_id, 'img_m', true);
-
-        // Process the main Image.
-        if(!empty($main_image)) {
-            $image_id = $this->download_and_attach($main_image, $post_id, $file_name = 'img_m_' . $post_id . '.jpg');
-
-            // Set it as the featured image.
-            if ($image_id) {
-                $this->set_featured_image($post_id, $image_id);
-            }
-        }
-    }
 }

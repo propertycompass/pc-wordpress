@@ -12,6 +12,10 @@ class PC_PostTypes
         add_action( 'admin_print_styles' , array($this, 'custom_admin_print_styles' ));
 
         apply_filters( 'disable_months_dropdown', true, "pc-listing" );
+
+        add_filter( 'admin_post_thumbnail_html', array($this, 'thumbnail_url_field' ));
+        add_action( 'save_post', array($this, 'thumbnail_url_field_save'), 10, 2 );
+        add_filter( 'post_thumbnail_html', array($this, 'thumbnail_external_replace'), 10, PHP_INT_MAX );
 	}
 
   /**
@@ -74,18 +78,24 @@ class PC_PostTypes
         unset( $columns['categories'] );
         unset( $columns['date'] );
 	      $new_columns = array(
+          'image' => __('Image', 'image'),
           'type' => __('Type', 'type'),
           'status' => __('Status', 'status'),
 	        'category' => __('Category', 'category'),
-	        'project-name' => __('Project', 'project-name'),
-
+	        'project-name' => __('Project', 'project-name')
 	        );
         return array_merge($columns, $new_columns);
     }
 
     function custom_pc_listing_column($column, $post_id) {
          switch ( $column ) {
-
+            case 'image':
+              $img = $this->get_thumbnail_url($post_id);
+              if ( is_string( $img ) )
+                    echo '<img src="' . $img . '" width="250"></img>';
+                else
+                    _e( 'Unable to get listing type');
+            break;
             case 'type' :
                 $type = $this->get_listing_type($post_id);
                 if ( is_string( $type ) )
@@ -107,17 +117,14 @@ class PC_PostTypes
                 else
                     _e( 'Unable to get listing status');
             case 'project-name':
-                $projectName = get_post_meta($post_id, 'project_name', true);
+                $projectName = get_post_meta($post_id, '_listing_project_name', true);
                 if ( is_string( $projectName ) )
                     echo $projectName;
                 else
                     _e( 'Unable to get listing project name' );
             break;
-
         }
      }
-
-   
 
     public function get_listing_post_type_support() {
         return array(
@@ -162,22 +169,104 @@ class PC_PostTypes
       public function get_listing_summary_metabox() {
         global $post;
         $listing_status = $this->get_listing_status($post->ID);
-        $listing_type = get_post_meta($post->ID, 'type', true);
+        $listing_type = get_post_meta($post->ID, '_listing_type', true);
         //$listing_category = get_post_meta($post->ID, 'extraFields_pcSaleStatus', true);
         require_once "listing_summary.tpl.php";
     }
 
      function get_listing_status($post_ID) {
-        return get_post_meta($post_ID, 'status', true);
+        return get_post_meta($post_ID, '_listing_status', true);
      }
 
      function get_listing_category($post_ID) {
-        return get_post_meta($post_ID, 'category', true);
+        return get_post_meta($post_ID, '_listing_category', true);
      }
 
      function get_listing_type($post_ID) {
-        return get_post_meta($post_ID, 'type', true);
+        return get_post_meta($post_ID, '_listing_type', true);
      }
+
+     function get_thumbnail_url($post_ID) {
+        return get_post_meta($post_ID, '_thumbnail_ext_url', true);
+     }
+
+     function url_is_image( $url ) {
+      if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+          return FALSE;
+      }
+      $ext = array( 'jpeg', 'jpg', 'gif', 'png' );
+      $info = (array) pathinfo( parse_url( $url, PHP_URL_PATH ) );
+      return
+       isset( $info['extension'] )
+          && in_array( strtolower( $info['extension'] ), $ext, TRUE );
+  }
+
+function thumbnail_url_field( $html ) {
+    global $post;
+    $value = get_post_meta( $post->ID, '_thumbnail_ext_url', TRUE ) ? : "";
+    $nonce = wp_create_nonce( 'thumbnail_ext_url_' . $post->ID . get_current_blog_id() );
+    $html .= '<input type="hidden" name="thumbnail_ext_url_nonce" value="' 
+        . esc_attr( $nonce ) . '">';
+    $html .= '<div><p>' . __('Or', 'txtdomain') . '</p>';
+    $html .= '<p>' . __( 'Enter the url for feature image', 'txtdomain' ) . '</p>';
+    $html .= '<p><input type="url" name="thumbnail_ext_url" value="' . $value . '"></p>';
+    if ( ! empty($value) && $this->url_is_image( $value ) ) {
+        $html .= '<p><img style="max-width:150px;height:auto;" src="' 
+            . esc_url($value) . '"></p>';
+        $html .= '<p>' . __( 'Leave url blank to remove.', 'pc-listing' ) . '</p>';
+    }
+    $html .= '</div>';
+    return $html;
+}
+
+function thumbnail_url_field_save( $pid, $post ) {
+    $cap = $post->post_type === 'page' ? 'edit_page' : 'edit_post';
+    if (
+        ! current_user_can( $cap, $pid )
+        || ! post_type_supports( $post->post_type, 'thumbnail' )
+        || defined( 'DOING_AUTOSAVE' )
+    ) {
+        return;
+    }
+    $action = 'thumbnail_ext_url_' . $pid . get_current_blog_id();
+    $nonce = filter_input( INPUT_POST, 'thumbnail_ext_url_nonce', FILTER_SANITIZE_STRING );
+    $url = filter_input( INPUT_POST,  'thumbnail_ext_url', FILTER_VALIDATE_URL );
+    if (
+        empty( $nonce )
+        || ! wp_verify_nonce( $nonce, $action )
+        || ( ! empty( $url ) && ! $this->url_is_image( $url ) )
+    ) {
+        return;
+    }
+    if ( ! empty( $url ) ) {
+        update_post_meta( $pid, '_thumbnail_ext_url', esc_url($url) );
+        if ( ! get_post_meta( $pid, '_thumbnail_id', TRUE ) ) {
+            update_post_meta( $pid, '_thumbnail_id', 'by_url' );
+        }
+    } elseif ( get_post_meta( $pid, '_thumbnail_ext_url', TRUE ) ) {
+        delete_post_meta( $pid, '_thumbnail_ext_url' );
+        if ( get_post_meta( $pid, '_thumbnail_id', TRUE ) === 'by_url' ) {
+            delete_post_meta( $pid, '_thumbnail_id' );
+        }
+    }
+}
+
+function thumbnail_external_replace( $html, $post_id ) {
+    $url =  get_post_meta( $post_id, '_thumbnail_ext_url', TRUE );
+    if ( empty( $url ) || ! $this->url_is_image( $url ) ) {
+        return $html;
+    }
+    $alt = get_post_field( 'post_title', $post_id ) . ' ' .  __( 'thumbnail', 'txtdomain' );
+    $attr = array( 'alt' => $alt );
+    $attr = apply_filters( 'wp_get_attachment_image_attributes', $attr, NULL );
+    $attr = array_map( 'esc_attr', $attr );
+    $html = sprintf( '<img src="%s"', esc_url($url) );
+    foreach ( $attr as $name => $value ) {
+        $html .= " $name=" . '"' . $value . '"';
+    }
+    $html .= ' />';
+    return $html;
+}
 
 }
 
