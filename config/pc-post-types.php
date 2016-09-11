@@ -14,6 +14,41 @@ class PC_PostTypes
         apply_filters( 'disable_months_dropdown', true, "pc-listing" );
 	}
 
+  /**
+     * Listing post type is used as a container for all properties. Listings
+     * are linked to a project.
+     */
+    public function create_listing_post_type() {
+        register_post_type('pc-listing',
+            array(
+                'has_archive' => false,
+                'hierarchical' => false,
+                'labels' => array(
+                    'name' => __('PC Listings'),
+                    'singular_name' => __('PC Listing')
+                ),
+                'public' => true,
+                'rewrite' => array('slug' => 'listing'),
+                //'taxonomies' => array('category'),
+                'supports' => $this->get_listing_post_type_support(),
+
+                //'supports'            => array( ),
+                'show_ui'             => true,
+                'show_in_menu'        => true,
+                'show_in_nav_menus'   => true,
+                'show_in_admin_bar'   => true,
+                'exclude_from_search' => false,
+                'publicly_queryable'  => true,
+                'map_meta_cap'        => true,
+
+                'capability_type' => 'post',
+                'capabilities' => array(
+                    'create_posts' => 'do_not_allow', // false < WP 4.5, credit @Ewout
+                )
+            )
+        );
+    }
+
   function custom_admin_print_styles() {
     global $post_type;
     if( 'pc-listing' == $post_type ) {
@@ -82,26 +117,7 @@ class PC_PostTypes
         }
      }
 
-     /**
-     * Listing post type is used as a container for all properties. Listings
-     * are linked to a project.
-     */
-    public function create_listing_post_type() {
-        register_post_type('pc-listing',
-            array(
-                'has_archive' => false,
-                'hierarchical' => false,
-                'labels' => array(
-                    'name' => __('PC Listings'),
-                    'singular_name' => __('PC Listing')
-                ),
-                'public' => true,
-                'rewrite' => array('slug' => 'listing'),
-                'taxonomies' => array('category'),
-                'supports' => $this->get_listing_post_type_support(),
-            )
-        );
-    }
+   
 
     public function get_listing_post_type_support() {
         return array(

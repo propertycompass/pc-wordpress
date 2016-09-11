@@ -67,7 +67,7 @@ class ListingsController {
 				$isSuccess = false;
 		}
 
-		$this->completeProcess($file, $isSuccess);
+		//$this->completeProcess($file, $isSuccess);
 	}
 
 	private function completeProcess($file, $isSuccess) {

@@ -82,8 +82,11 @@ class PC_Listing_Importer {
 		if ( $listing_id ) {
       		update_post_meta( $listing_id, 'listing_id', $listing_data->id );
 
-			$images = array_map(function ($ar) {return $ar->url;}, $listing_data->property->images);
-			update_post_meta( $listing_id, 'images', $images );
+      		if (!empty($listing_data->property->images)) {
+      			$images = array_map(function ($ar) {return $ar->url;}, $listing_data->property->images);	
+				$delimImages = implode("|", $images);				
+      		}
+      		update_post_meta( $listing_id, 'images', $delimImages );
 
 			foreach($this->mappedFields as $k => $id ){
 				$v = $this->get_mapped_value($listing_data, $id);
