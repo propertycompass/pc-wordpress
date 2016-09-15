@@ -33,10 +33,7 @@ class PC_Listing_Importer {
 			'_listing_type' => 'type',
 			'_listing_sub_type' => 'subType'
 		);
-
 	}
-
-
 
 	public function import($listing_data) {
 

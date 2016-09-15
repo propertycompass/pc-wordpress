@@ -32,7 +32,7 @@ class PC_PostTypes
                     'singular_name' => __('PC Listing')
                 ),
                 'public' => true,
-                'rewrite' => array('slug' => 'listing'),
+                'rewrite' => array('slug' => 'listing', 'with_front' => FALSE),
                 //'taxonomies' => array('category'),
                 'supports' => $this->get_listing_post_type_support(),
 
