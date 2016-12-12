@@ -89,6 +89,6 @@ class ListingsController {
 
 		print_r('Path: ' . $full_path . '\n');
 		rename($file, $full_path);
-		die;
+		//die;
 	}
 }
