@@ -44,7 +44,7 @@ class PC_Listing_Importer {
 		$args = array(
 			'meta_query' => array(
 		       array(
-		           'key' => 'listing_id',
+		           'key' => '_listing_id',
 		           'value' => $listing_data->id
 		       )
 			),
