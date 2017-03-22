@@ -116,6 +116,7 @@ class PC_PostTypes
                     echo $status;
                 else
                     _e( 'Unable to get listing status');
+            break;
             case 'project-name':
                 $projectName = get_post_meta($post_id, '_listing_project_name', true);
                 if ( is_string( $projectName ) )

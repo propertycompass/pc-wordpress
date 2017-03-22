@@ -9,6 +9,7 @@
  * Author URI: propertycompass.com.au
  */
 require_once dirname(__FILE__) . '/importers/listing-importer.php';
+require_once dirname(__FILE__) . '/importers/property-list-importer.php';
 require_once dirname(__FILE__) . '/admin/pc-admin.php';
 require_once dirname(__FILE__) . '/config/pc-post-types.php';
 defined( 'ABSPATH' ) or die( 'Access denied!' );
@@ -28,7 +29,7 @@ class PC_API {
 			$post_types = new PC_PostTypes();
 			$post_types->create_listing_post_type();
 
-			$regex = 'propertycompass/v1/([^/]*)/([^/]*)/?';
+			$regex = 'propertycompass/v1/([^/]+)/([^/]+)/?';
 			$location = 'index.php?_api_controller=$matches[1]&_api_action=$matches[2]';
 			$priority = 'top';
 
@@ -40,9 +41,9 @@ class PC_API {
 				array_push($vars, '_api_action');
 				return $vars;
 			});
-
-
+			
 			add_filter( 'template_include', function($template) {
+
 				$controller = get_query_var('_api_controller', null);
 				$action = get_query_var('_api_action', null);
 

@@ -26,6 +26,7 @@ class PC_Listing_Importer {
 			'_listing_baths' => 'property:features:bathrooms',
 			'_listing_carports' => 'property:features:carports',
 			'_listing_garages' => 'property:features:garages',
+			'_listing_project_id' => 'projectId',
 			'_listing_project_name' => 'project:name',
 			'_listing_project_image' => 'project:titleImageUrl',
 			'_listing_category' => 'property:category',
@@ -40,12 +41,15 @@ class PC_Listing_Importer {
 		if (!$listing_data)
 	      return false;
 
+
+	  	$reference_id = !is_null($listing_data->id) ? $listing_data->id : $listing_data->listingId;
+
 		// We search by the custom field 'listing_id' which stores the id of the listing from Property Compass
 		$args = array(
 			'meta_query' => array(
 		       array(
 		           'key' => '_listing_id',
-		           'value' => $listing_data->id
+		           'value' => $reference_id
 		       )
 			),
 			'posts_per_page' => 1,
@@ -56,29 +60,29 @@ class PC_Listing_Importer {
 	    $listing = get_posts($args);
 
     	if ( $listing ) {
-    		$listing_id = $listing[0]->ID;
-    		$this->logit("UPDATE -> " . $listing_id);
+    		$listing_post_id = $listing[0]->ID;
+    		$this->logit("UPDATE listing -> " . $listing_post_id);
 		} else {
-			$this->logit("INSERT -> " . $listing_data->id);
+			$this->logit("INSERT listing -> " . $reference_id);
 		}
 
-		 $listing_post = array(
-		      'ID'            => $listing_id,
-		      'post_title'    => $this->get_title($listing_data),
-		      'post_content'  => $listing_data->description,
-		      'post_type'     => 'pc-listing',
-		      'post_status'   => ( $listing ) ? $listing[0]->post_status : 'publish'
-		   );
+	 	$listing_post = array(
+	      'ID'            => $listing_post_id,
+	      'post_title'    => $this->get_title($listing_data),
+	      'post_content'  => $listing_data->description,
+	      'post_type'     => 'pc-listing',
+	      'post_status'   => ( $listing ) ? $listing[0]->post_status : 'publish'
+	   	);
 
- 		$listing_id = wp_insert_post( $listing_post );
+ 		$listing_post_id = wp_insert_post( $listing_post );
 
  		$tags = $this->get_tags($listing_data);
  		if (!empty($tags)) {
- 			wp_set_post_tags($listing_id, $tags);
+ 			wp_set_post_tags($listing_post_id, $tags);
  		}
 
-		if ( $listing_id ) {
-      		update_post_meta( $listing_id, '_listing_id', $listing_data->id );
+		if ( $listing_post_id ) {
+      		update_post_meta( $listing_post_id, '_listing_id', $reference_id );
 
       		if (!empty($listing_data->property->images)) {
       			$images = array_map(function ($ar) {return $ar->url;}, $listing_data->property->images);	
@@ -86,20 +90,20 @@ class PC_Listing_Importer {
 
 				//Featured image is first image in array
   				if (!empty($images)) {
-  					update_post_meta( $listing_id, '_thumbnail_ext_url', $images[0] );
-  					update_post_meta( $listing_id, '_thumbnail_id', 'by_url' );
+  					update_post_meta( $listing_post_id, '_thumbnail_ext_url', $images[0] );
+  					update_post_meta( $listing_post_id, '_thumbnail_id', 'by_url' );
   				}
       		}
-      		update_post_meta( $listing_id, 'images', $delimImages );
+      		update_post_meta( $listing_post_id, 'images', $delimImages );
 
 			foreach($this->mappedFields as $k => $id ){
 				$v = $this->get_mapped_value($listing_data, $id);
 				if ($v) {
-					update_post_meta( $listing_id, $k, $v);
+					update_post_meta( $listing_post_id, $k, $v);
 				}
 			}
 
-      		//update_post_meta( $listing_id, 'json', addslashes( json_decode($listing_data)) );
+      		//update_post_meta( $listing_post_id, 'json', addslashes( json_decode($listing_data)) );
 
 	      // Remove if you don't need to import tags and make sure
 	      // the tag name is correct if you do
@@ -107,7 +111,7 @@ class PC_Listing_Importer {
 	      //$this->generate_background_images( $developer_data->full_name, $developer_data->avatar->large_url );
     	}
 
-    	return true;
+    	return $listing_post_id;
 	}
 	
 	/**
@@ -132,7 +136,20 @@ class PC_Listing_Importer {
      * Get the formatted title.
      */
     public function get_title($listing) {
-        return esc_attr($listing->headline);
+    	if (!empty($listing->headline)) {
+    		return esc_attr($listing->headline);	
+    	}
+
+    	$subNumber = $listing->property->address->subNumber;
+		$streetNumber = $listing->property->address->streetNumber;
+		$street = $listing->property->address->street;
+		$locality = $listing->property->address->locality;
+		$region = $listing->property->address->region;
+
+		if (!empty($subNumber)) 
+			$streetNumber = $subNumber . "/" . $streetNumber;
+
+		return $streetNumber . ' ' . $street . ' ' . $locality . ', ' . $region;
     }
 
     /**

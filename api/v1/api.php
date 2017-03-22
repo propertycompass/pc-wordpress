@@ -10,6 +10,8 @@ class PropertyCompassAPIV1 {
   public function __construct() {
       $controller = get_query_var('_api_controller', null) . 'Controller';
       $action = get_query_var('_api_action', null);
+      $action = str_replace("-", "", $action);
+
 
       $this->apiKey = get_option('property_compass_api_key');      
       $this->require_api_key();
