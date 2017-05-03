@@ -35,13 +35,13 @@ class PC_API {
 
 			//add the rule
 			add_rewrite_rule( $regex, $location, $priority );
-
+ 			
 			add_filter( 'query_vars', function($vars) {
 				array_push($vars, '_api_controller');
 				array_push($vars, '_api_action');
 				return $vars;
 			});
-			
+
 			add_filter( 'template_include', function($template) {
 
 				$controller = get_query_var('_api_controller', null);
@@ -49,11 +49,13 @@ class PC_API {
 
 				if($controller && $action) {
 					$template = __DIR__ . '/api/v1/api.php';
+					include( $template );
+		            exit(); //incase any gypsy template creators think they own the show.
 				}
 				return $template;
 			}, 99 );
 		});
-	}
+	}	
 }
 
 new PC_API();

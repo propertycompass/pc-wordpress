@@ -31,8 +31,9 @@ class ListingsController {
 			//NOT FOUND, should be a listings file
   			$this->processListingsFile($file);
 		}
-		//wp_send_json(['success' => true, 'files' => $files]);
-		die();
+		
+		//wp_send_json(['files' => $files]);
+		wp_send_json_success(['files' => $files]);
 	}
 
 	/**
@@ -104,6 +105,7 @@ class ListingsController {
 	}
 
 	private function processPropertyListFile($file) {
+		$isSuccess = true;
 		$propertyList = json_decode(file_get_contents($file));
 		$importer = new PC_PropertyList_Importer();
 
@@ -111,6 +113,7 @@ class ListingsController {
 			$isSuccess = false;
 
 		$this->completeProcess($file, $isSuccess);
+		return $isSuccess;
 	}
 
 	private function processListingsFile($file) {
@@ -126,6 +129,7 @@ class ListingsController {
 		}
 
 		$this->completeProcess($file, $isSuccess);
+		return $isSuccess;
 	}
 
 	private function completeProcess($file, $isSuccess) {
@@ -148,5 +152,6 @@ class ListingsController {
 		print_r('Path: ' . $full_path . '\n');
 		rename($file, $full_path);
 		//die;
+		
 	}
 }
