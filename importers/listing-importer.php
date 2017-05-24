@@ -32,7 +32,14 @@ class PC_Listing_Importer {
 			'_listing_category' => 'property:category',
 			'_listing_status' => 'status',
 			'_listing_type' => 'type',
-			'_listing_sub_type' => 'subType'
+			'_listing_sub_type' => 'subType',
+			'_listing_lat' => 'property:location:lat',
+			'_listing_lon' => 'property:location:lng',
+			'_listing_land_size' => 'property:landDetails:area:amount',
+			'_listing_land_size_unit' => 'property:landDetails:area:unit',
+			'_listing_building_size' => 'property:buildingDetails:area:amount',
+			'_listing_building_size_unit' => 'property:buildingDetails:area:unit',
+			'_listing_last_modified' => 'lastModified'
 		);
 	}
 
@@ -94,7 +101,9 @@ class PC_Listing_Importer {
   					update_post_meta( $listing_post_id, '_thumbnail_id', 'by_url' );
   				}
       		}
+      		
       		update_post_meta( $listing_post_id, 'images', $delimImages );
+      		update_post_meta( $listing_post_id, '_listing_address', $this->get_address($listing_data));
 
 			foreach($this->mappedFields as $k => $id ){
 				$v = $this->get_mapped_value($listing_data, $id);
@@ -109,6 +118,9 @@ class PC_Listing_Importer {
 	      // the tag name is correct if you do
 	      //wp_set_object_terms( $developer_id, $developer_data->tags, 'developer_tag' );
 	      //$this->generate_background_images( $developer_data->full_name, $developer_data->avatar->large_url );
+
+			//Integration point to support custom actions each time a listing is imported
+			do_action('pc_listing_imported', $listing_post_id, $listing_data);
     	}
 
     	return $listing_post_id;
@@ -140,18 +152,23 @@ class PC_Listing_Importer {
     		return esc_attr($listing->headline);	
     	}
 
+    	return get_address($listing);
+    }
+
+
+    public function get_address($listing) {
     	$subNumber = $listing->property->address->subNumber;
 		$streetNumber = $listing->property->address->streetNumber;
 		$street = $listing->property->address->street;
 		$locality = $listing->property->address->locality;
 		$region = $listing->property->address->region;
+		$postCode = $listing->property->address->postCode;
 
 		if (!empty($subNumber)) 
 			$streetNumber = $subNumber . "/" . $streetNumber;
 
-		return $streetNumber . ' ' . $street . ' ' . $locality . ', ' . $region;
+		return $streetNumber . ' ' . $street . ' ' . $locality . ', ' . $postCode . ', '  . $region;
     }
-
     /**
      * Get a list of tags for a listing
      */
