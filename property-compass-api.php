@@ -4,7 +4,7 @@
  * Plugin Name: Property Compass : API
  * Plugin URI: http://www.propertycompass.com.au/integrations/wordpress
  * Description: This plugin provides a HTTP API for Property Compass to communicate with.
- * Version: 0.1
+ * Version: 0.3
  * Author: Property Compass
  * Author URI: propertycompass.com.au
  */
