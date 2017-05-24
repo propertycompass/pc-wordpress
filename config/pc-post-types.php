@@ -25,11 +25,11 @@ class PC_PostTypes
     public function create_listing_post_type() {
         register_post_type('pc-listing',
             array(
-                'has_archive' => false,
+                'has_archive' => true,
                 'hierarchical' => false,
                 'labels' => array(
-                    'name' => __('PC Listings'),
-                    'singular_name' => __('PC Listing')
+                    'name' => __('Listings'),
+                    'singular_name' => __('Listing')
                 ),
                 'public' => true,
                 'rewrite' => array('slug' => 'listing', 'with_front' => FALSE),
