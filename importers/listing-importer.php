@@ -101,6 +101,16 @@ class PC_Listing_Importer {
   					update_post_meta( $listing_post_id, '_thumbnail_id', 'by_url' );
   				}
       		}
+
+			//imports the primary contact
+			if (!empty($listing_data->contacts)) {
+				$primaryContact = $listing_data->contacts[0];
+				update_post_meta($listing_post_id, '_listing_contact_id', $primaryContact->referenceId);
+				update_post_meta($listing_post_id, '_listing_contact_name', $primaryContact->name);
+				update_post_meta($listing_post_id, '_listing_contact_mobile', $primaryContact->mobile);
+				update_post_meta($listing_post_id, '_listing_contact_phone', $primaryContact->phone);
+				update_post_meta($listing_post_id, '_listing_contact_email', $primaryContact->email);
+			}
       		
       		update_post_meta( $listing_post_id, 'images', $delimImages );
       		update_post_meta( $listing_post_id, '_listing_address', $this->get_address($listing_data));
