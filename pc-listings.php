@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Plugin Name: Property Compass : API
+ * Plugin Name: Property Compass: Listings
  * Plugin URI: http://www.propertycompass.com.au/integrations/wordpress
  * Description: This plugin provides a HTTP API for Property Compass to communicate with.
  * Version: 0.3
@@ -14,7 +14,7 @@ require_once dirname(__FILE__) . '/admin/pc-admin.php';
 require_once dirname(__FILE__) . '/config/pc-post-types.php';
 defined( 'ABSPATH' ) or die( 'Access denied!' );
 
-class PC_API {
+class PC_Listings {
 	public function __construct() {
 		$this->setup();
 	}
@@ -58,5 +58,5 @@ class PC_API {
 	}	
 }
 
-new PC_API();
+new PC_Listings();
 new PC_Admin();

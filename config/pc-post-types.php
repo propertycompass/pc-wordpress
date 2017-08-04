@@ -66,7 +66,6 @@ class PC_PostTypes
      * Setup all the required post types.
      */
     public function setup() {
-        //$this->create_project_post_type();
         $this->create_listing_post_type();
     }
 
@@ -139,8 +138,6 @@ class PC_PostTypes
      * Register our listing metaboxes.
      */
     public function add_listing_summary_metaboxes() {
-        
-
         add_meta_box(
             $id='listing_info_metabox',
             $title = 'Listing Summary',
